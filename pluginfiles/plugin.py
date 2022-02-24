@@ -1,0 +1,3 @@
+
+class FilterPluginInterface:
+    name: str
