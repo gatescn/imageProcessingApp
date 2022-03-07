@@ -8,6 +8,7 @@ import numpy as np
 from pluginfiles.GaussianNoiseFilter import GaussianNoiseFilter
 from pluginfiles.LinearFilter import LinearFilter
 from pluginfiles.MedianFilter import MedianFilter
+from pluginfiles.img_histogram import img_histogram
 
 imageDictionary = {}
 
@@ -51,8 +52,10 @@ if __name__ == '__main__':
         # the raw image
         raw_img = Image.open(filepath).convert('L')
         image_copy = raw_img.copy()
-        lf = MedianFilter(1, 1, image_copy)
-        filtered_image_data = lf.performfilter()
-        im = Image.fromarray(filtered_image_data)
-        im.show("test")
+        img_histogram = img_histogram(raw_img, False)
+        img_histogram.cretateHistogram()
+        #lf = MedianFilter(1, 1, image_copy)
+        #filtered_image_data = lf.performfilter()
+        #im = Image.fromarray(filtered_image_data)
+        #im.show("test")
         break;
