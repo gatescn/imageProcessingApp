@@ -1,11 +1,18 @@
 # main script of image processing app
 import os
-from PIL import Image, ImageFile
+
 from pluginfiles.plugin import FilterPluginInterface
+from PIL import Image, ImageFile
+import numpy as np
+
+from pluginfiles.GaussianNoiseFilter import GaussianNoiseFilter
+from pluginfiles.LinearFilter import LinearFilter
+from pluginfiles.MedianFilter import MedianFilter
 
 imageDictionary = {}
 
-
+#each filters needs to create a img copy, similat to how it's done in the slides.
+#img.copy, blank array for imagae data, filter and add img data to empty array.
 class pluginimporter:
     def isfilterplugin(self):
         return issubclass(self.attribute, FilterPluginInterface)
@@ -28,43 +35,6 @@ def read_config():
 
     return rawimagedirectory, processedimagedirectory, filters
 
-
-def copyimagedata(d):
-    newimgdata = []
-    for t in d:
-        tempList = []
-        for i in t:
-            tempList.append(i)
-        newimgdata.append(tempList)
-    return newimgdata
-
-
-def finalizeimagedata(d):
-    datafinal = []
-    for s in d:
-        tuplelist = tuple(s)
-        datafinal.append(tuplelist)
-    return datafinal
-
-
-def createnewimg(mode, size, d):
-    newimg = Image.new(mode, size)
-    newimg.putdata(d)
-    return newimg
-
-
-def getimagedata(img):
-    d = list(img.getdata())
-    w = img.width
-    h = img.height
-    return d, w, h
-
-
-def addtohistory(index, img):
-    dictkey = "img" + str(index)
-    imageDictionary[dictkey] = img
-
-
 if __name__ == '__main__':
 
     ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -79,6 +49,10 @@ if __name__ == '__main__':
         fileindex += 1
         filepath = rawdirectory + "/" + file
         # the raw image
-        rawimg = Image.open(filepath)
-        data, width, height = getimagedata(rawimg)
-        print(fileindex)
+        raw_img = Image.open(filepath).convert('L')
+        image_copy = raw_img.copy()
+        lf = MedianFilter(1, 1, image_copy)
+        filtered_image_data = lf.performfilter()
+        im = Image.fromarray(filtered_image_data)
+        im.show("test")
+        break;

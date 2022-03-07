@@ -6,13 +6,11 @@ class SaltAndPepperFilter(FilterPluginInterface):
     trashcan = []
 
     def setstrength(self):
-        if self.strength == 1:
-            self.strength = (-1, 0, 0, 1)
-            return
         if self.strength == 2:
-            self.strength = (-1, -1, 0, 1, 1)
+            self.strength = (1, 0, 1)
             return
-        self.strength = (-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1)
+        else:
+            self.strength = (0, 0, 1)
         return
 
     def __init__(self, strength, matrix):
@@ -29,10 +27,10 @@ class SaltAndPepperFilter(FilterPluginInterface):
     def computevalue(self, currentpixel):
         decider = random.randint(0, len(self.strength) - 1)
         choice = self.strength[decider]
-        if choice == -1:
+        if choice == 0:
             # salt
-            currentpixel = 0
+            currentpixel = 255
         if choice == 1:
             # pepper
-            currentpixel = 255
+            currentpixel = 0
         return currentpixel
