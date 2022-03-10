@@ -1,27 +1,27 @@
 import random
-from plugin import FilterPluginInterface
+import numpy as np
+from pluginfiles.plugin import NoiseFilterPluginInterface
 
 
-class SaltAndPepperFilter(FilterPluginInterface):
-    trashcan = []
+class SaltAndPepperFilter(NoiseFilterPluginInterface):
+    strength = None
+    imgMatrix = None
 
     def setstrength(self):
-        if self.strength == 2:
+        if self.strength == 1:
             self.strength = (1, 0, 1)
             return
         else:
             self.strength = (0, 0, 1)
         return
 
-    def __init__(self, strength, matrix):
+    def performFilter(self, strength, raw_img):
         self.strength = strength
-        self.imgMatrix = matrix
-        self.setstrength()
-
-    def performfilter(self):
+        self.imgMatrix = np.array(raw_img)
+        self.setstrength(self)
         for r, rows in enumerate(self.imgMatrix):
             for c, col in enumerate(rows):
-                pixelvalue = self.computevalue(col)
+                pixelvalue = self.computevalue(self,col)
                 self.imgMatrix[r][c] = pixelvalue
 
     def computevalue(self, currentpixel):

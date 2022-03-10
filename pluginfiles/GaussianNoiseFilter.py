@@ -1,25 +1,20 @@
 import numpy as np
-
-from pluginfiles.plugin import FilterPluginInterface
+from pluginfiles.plugin import NoiseFilterPluginInterface
 from numpy.random import normal
 
 
-class GaussianNoiseFilter(FilterPluginInterface):
+class GaussianNoiseFilter(NoiseFilterPluginInterface):
+    imgMatrix = None
 
-    def setstrength(self):
-        if self.strength == 2:
-            self.strength = .5
-            return
+    def setstrength(self, strength):
+        if strength == 2:
+            strength = .5
+            return strength
         else:
-            self.strength = 1
-        return
+            strength = 1
+        return strength
 
-    def __init__(self, strength, matrix):
-        self.std = None
-        self.mean = None
-        self.strength = strength
-        self.setstrength()
-        self.imgMatrix = matrix
-
-    def performfilter(self):
-        self.mean = np.mean(self.imgMatrix)
+    def performfilter(self, strength_, raw_img):
+        filter_str = self.setstrength(self, strength_)
+        self.imgMatrix = np.array(raw_img)
+        mean = np.mean(self.imgMatrix)

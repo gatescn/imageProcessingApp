@@ -7,13 +7,15 @@ from PIL import Image, ImageFile
 class LinearFilter(FilterPluginInterface):
     kernal = None
     filteredImage = None
+    masksize = None
+    weight = None
 
     def setkernal(self):
         if self.masksize == 1:
             self.kernal = np.ones((5, 5), dtype=float)
         else:
             self.kernal = np.ones((3, 3), dtype=float)
-        self.applykernalweight()
+        self.applykernalweight(self)
 
     def applykernalweight(self):
         for r, row in enumerate(self.kernal):
@@ -37,14 +39,13 @@ class LinearFilter(FilterPluginInterface):
         result = np.sum(tempArray)
         return result
 
-    def __init__(self, masksize, maskweight, raw_img):
+    def performFilter(self, masksize, maskweight, raw_img):
         self.masksize = masksize
         self.weight = maskweight
         self.img_data = np.array(raw_img)
         self.filteredImage = np.empty_like(self.img_data)
-
-    def performfilter(self):
-        self.setkernal()
+        self.setkernal(self)
+        self.applykernalweight(self)
         S = self.img_data.shape
         F = self.kernal.shape
 
@@ -59,6 +60,6 @@ class LinearFilter(FilterPluginInterface):
         for i in range(S[0]):
             for j in range(S[1]):
                 window_slice = np.array(Z[i:i + F[0], j:j + F[1]])
-                result = self.filterComputation(window_slice)
+                result = self.filterComputation(self,window_slice)
                 self.filteredImage[i,j] = result
         return self.filteredImage

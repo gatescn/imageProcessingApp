@@ -2,12 +2,14 @@ from pluginfiles.plugin import FilterPluginInterface
 import numpy as np
 import math
 import statistics
-from PIL import Image, ImageFile
 
 
 class MedianFilter(FilterPluginInterface):
     kernal = None
     filteredImage = None
+    masksize = None
+    weight = None
+    img_data = None
 
     def setkernal(self):
         if self.masksize == 1:
@@ -39,13 +41,11 @@ class MedianFilter(FilterPluginInterface):
         result = statistics.median(tempArray)
         return result
 
-    def __init__(self, masksize, maskweight, raw_img):
+    def performfilter(self, masksize, maskweight, raw_img):
         self.masksize = masksize
         self.weight = maskweight
         self.img_data = np.array(raw_img)
         self.filteredImage = np.empty_like(self.img_data)
-
-    def performfilter(self):
         self.setkernal()
         S = self.img_data.shape
         F = self.kernal.shape

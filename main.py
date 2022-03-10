@@ -1,40 +1,38 @@
 # main script of image processing app
+import importlib
 import os
+import sys
 
-from pluginfiles.plugin import FilterPluginInterface
 from PIL import Image, ImageFile
-import numpy as np
-
-from pluginfiles.GaussianNoiseFilter import GaussianNoiseFilter
-from pluginfiles.LinearFilter import LinearFilter
-from pluginfiles.MedianFilter import MedianFilter
-from pluginfiles.img_histogram import img_histogram
-
-imageDictionary = {}
-
-#each filters needs to create a img copy, similat to how it's done in the slides.
-#img.copy, blank array for imagae data, filter and add img data to empty array.
-class pluginimporter:
-    def isfilterplugin(self):
-        return issubclass(self.attribute, FilterPluginInterface)
-
-    def __init__(self, modulename, classname):
-        self.module = __import__(modulename)
-        self.attribute = getattr(self.module, classname)
+from pluginfiles.plugin import registeredFilters
+from pluginfiles.plugin import FilterPluginInterface, NoiseFilterPluginInterface
 
 
 # reads config file
 def read_config():
     filename = "external.config"
-    contents = open(filename).read()
-    filters = []
+    try:
+        contents = open(filename).read()
+    except OSError:
+        print("Could not find file:", filename)
+        sys.exit()
+    filters_ = []
     config = eval(contents)
     rawimagedirectory = config['imageDirectory']
     processedimagedirectory = config['outputDirectory']
-    for f in config['filters']:
-        filters.append(f)
+    for fp in config['filtersToApply']:
+        if isRegisteredFilter(fp):
+            filters_.append(fp)
+    return rawimagedirectory, processedimagedirectory, filters_
 
-    return rawimagedirectory, processedimagedirectory, filters
+
+def isRegisteredFilter(name):
+    for rf in registeredFilters:
+        if rf == name:
+            return True
+
+    return False
+
 
 if __name__ == '__main__':
 
@@ -44,18 +42,31 @@ if __name__ == '__main__':
 
     files = os.listdir(rawdirectory)
 
-    fileindex = 0
-
     for file in files:
-        fileindex += 1
         filepath = rawdirectory + "/" + file
         # the raw image
         raw_img = Image.open(filepath).convert('L')
         image_copy = raw_img.copy()
-        img_histogram = img_histogram(raw_img, False)
-        img_histogram.cretateHistogram()
-        #lf = MedianFilter(1, 1, image_copy)
-        #filtered_image_data = lf.performfilter()
-        #im = Image.fromarray(filtered_image_data)
-        #im.show("test")
-        break;
+        for f in filters:
+            moduleName = "pluginfiles." + f
+            module = importlib.import_module(moduleName)
+            plugin = getattr(module, f)
+            operationDefDirectory = "/operationDefinitionRepository/"
+            pathDir = os.path.dirname(__file__)
+            fullpath = os.path.join(pathDir+operationDefDirectory+f+"Definition.config")
+            try:
+                def_cont = open(fullpath).read()
+            except OSError:
+                print("Could not find definition file for:", fullpath)
+                sys.exit()
+            definitionParams = eval(def_cont)
+            if issubclass(plugin, FilterPluginInterface):
+                maskSize = int(definitionParams['maskSize'])
+                maskWeight = float(definitionParams['filterWeight'])
+                plugin.performFilter(plugin, maskSize, maskWeight, raw_img)
+            if issubclass(plugin, NoiseFilterPluginInterface):
+                strength = int(definitionParams['strength'])
+                plugin.performFilter(plugin, strength, raw_img)
+        filterName = str(filter.__name__)
+        print(file+" converted using "+f)
+
