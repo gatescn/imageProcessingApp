@@ -2,7 +2,7 @@
 import importlib
 import os
 import sys
-
+from datetime import datetime
 from PIL import Image, ImageFile
 from pluginfiles.plugin import registeredFilters
 from pluginfiles.plugin import FilterPluginInterface, NoiseFilterPluginInterface
@@ -34,6 +34,10 @@ def isRegisteredFilter(name):
     return False
 
 
+def fileDirectoryCheck(path):
+    return os.path.isdir(path)
+
+
 if __name__ == '__main__':
 
     ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -43,6 +47,7 @@ if __name__ == '__main__':
     files = os.listdir(rawdirectory)
 
     for file in files:
+        filename = str(file)
         filepath = rawdirectory + "/" + file
         # the raw image
         raw_img = Image.open(filepath).convert('L')
@@ -53,7 +58,7 @@ if __name__ == '__main__':
             plugin = getattr(module, f)
             operationDefDirectory = "/operationDefinitionRepository/"
             pathDir = os.path.dirname(__file__)
-            fullpath = os.path.join(pathDir+operationDefDirectory+f+"Definition.config")
+            fullpath = os.path.join(pathDir + operationDefDirectory + f + "Definition.config")
             try:
                 def_cont = open(fullpath).read()
             except OSError:
@@ -63,10 +68,19 @@ if __name__ == '__main__':
             if issubclass(plugin, FilterPluginInterface):
                 maskSize = int(definitionParams['maskSize'])
                 maskWeight = float(definitionParams['filterWeight'])
-                plugin.performFilter(plugin, maskSize, maskWeight, raw_img)
+                filteredImageData = plugin.performFilter(plugin, maskSize, maskWeight, raw_img)
             if issubclass(plugin, NoiseFilterPluginInterface):
                 strength = int(definitionParams['strength'])
-                plugin.performFilter(plugin, strength, raw_img)
-        filterName = str(filter.__name__)
-        print(file+" converted using "+f)
-
+                filteredImageData = plugin.performFilter(plugin, strength, raw_img)
+        filteredImage = Image.fromarray(filteredImageData)
+        fulloutputdirectory = outputdirectory + "/" + f
+        if fileDirectoryCheck(fulloutputdirectory):
+            now = datetime.now()
+            d = now.strftime("%m%d%Y%H_%M_%S")
+            os.rename(fulloutputdirectory,outputdirectory+"/"+f+"_"+"History_"+d)
+            os.mkdir(fulloutputdirectory)
+            filteredImage.save(fulloutputdirectory+"/"+f+"_"+filename, "bmp")
+        else:
+            os.mkdir(fulloutputdirectory)
+            filteredImage.save(fulloutputdirectory + "/" + f + "_" + filename, "bmp")
+        print(file + " converted using " + f)

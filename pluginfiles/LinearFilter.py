@@ -11,7 +11,7 @@ class LinearFilter(FilterPluginInterface):
     weight = None
 
     def setkernal(self):
-        if self.masksize == 1:
+        if self.masksize == 2:
             self.kernal = np.ones((5, 5), dtype=float)
         else:
             self.kernal = np.ones((3, 3), dtype=float)

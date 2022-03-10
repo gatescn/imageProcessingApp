@@ -12,7 +12,7 @@ class MedianFilter(FilterPluginInterface):
     img_data = None
 
     def setkernal(self):
-        if self.masksize == 1:
+        if self.masksize == 2:
             self.kernal = np.ones((5, 5), dtype=float)
         else:
             self.kernal = np.ones((3, 3), dtype=float)
@@ -41,7 +41,7 @@ class MedianFilter(FilterPluginInterface):
         result = statistics.median(tempArray)
         return result
 
-    def performfilter(self, masksize, maskweight, raw_img):
+    def performFilter(self, masksize, maskweight, raw_img):
         self.masksize = masksize
         self.weight = maskweight
         self.img_data = np.array(raw_img)

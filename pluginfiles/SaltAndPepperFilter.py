@@ -8,7 +8,7 @@ class SaltAndPepperFilter(NoiseFilterPluginInterface):
     imgMatrix = None
 
     def setstrength(self):
-        if self.strength == 1:
+        if self.strength == 2:
             self.strength = (1, 0, 1)
             return
         else:
@@ -23,6 +23,7 @@ class SaltAndPepperFilter(NoiseFilterPluginInterface):
             for c, col in enumerate(rows):
                 pixelvalue = self.computevalue(self,col)
                 self.imgMatrix[r][c] = pixelvalue
+        return self.imgMatrix
 
     def computevalue(self, currentpixel):
         decider = random.randint(0, len(self.strength) - 1)
