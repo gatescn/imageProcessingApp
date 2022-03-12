@@ -2,6 +2,13 @@ To run program
 
 1st: configure your processed image outputs/input folder as well filters you would like to use for this batch. The program
 will apply the filters in sequential order.
+Filters to choose from:
+
+GaussianNoiseFilter
+LinearFilter
+MedianFilter
+SaltAndPepperFilter
+
 2nd: define your filter definitions using the operationDefinition files in the operationDefinitionRepository folder.
 These are used to change the default values used by the filters.
 Currently implemented filters:
