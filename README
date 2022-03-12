@@ -1,0 +1,34 @@
+To run program
+
+1st: configure your processed image outputs/input folder as well filters you would like to use for this batch. The program
+will apply the filters in sequential order.
+2nd: define your filter definitions using the operationDefinition files in the operationDefinitionRepository folder.
+These are used to change the default values used by the filters.
+Currently implemented filters:
+Gaussian Noise
+inputs:
+strength: int = 1 or 2. 2 is the max
+
+Salt and Pepper Noise
+inputs:
+strength: int = 1 or 2, 2 is the max
+
+Linear Filter
+inputs:
+Mask Size = int = 1 or 2, 2 is the max
+Filter Weight = decimal
+
+Median Filter
+inputs:
+Mask Size = = 1 or 2, 2 is the max
+Filter Weight = decimal
+
+Directories are produced for each filter along with the Histogram folder which will contain the histogram outputs for each
+image processed.
+History folders are produced after every run so you don't lose previously filtered images.
+
+Missing implementations:
+Histogram Equalization
+Color Conversion
+Histogram Quantization
+

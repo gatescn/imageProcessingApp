@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import time
 from pluginfiles.plugin import NoiseFilterPluginInterface
 
 
@@ -9,13 +10,14 @@ class SaltAndPepperFilter(NoiseFilterPluginInterface):
 
     def setstrength(self):
         if self.strength == 2:
-            self.strength = (1, 0, 1)
+            self.strength = (0,1,2,2,2)
             return
         else:
-            self.strength = (0, 0, 1)
+            self.strength = (0, 1, 2,2,2,2,2,2)
         return
 
     def performFilter(self, strength, raw_img):
+        operationStartTime = time.time()
         self.strength = strength
         self.imgMatrix = np.array(raw_img)
         self.setstrength(self)
@@ -23,7 +25,8 @@ class SaltAndPepperFilter(NoiseFilterPluginInterface):
             for c, col in enumerate(rows):
                 pixelvalue = self.computevalue(self,col)
                 self.imgMatrix[r][c] = pixelvalue
-        return self.imgMatrix
+        totalOperation = time.time() - operationStartTime
+        return self.imgMatrix, totalOperation
 
     def computevalue(self, currentpixel):
         decider = random.randint(0, len(self.strength) - 1)

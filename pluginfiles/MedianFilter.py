@@ -2,6 +2,7 @@ from pluginfiles.plugin import FilterPluginInterface
 import numpy as np
 import math
 import statistics
+import time
 
 
 class MedianFilter(FilterPluginInterface):
@@ -16,7 +17,7 @@ class MedianFilter(FilterPluginInterface):
             self.kernal = np.ones((5, 5), dtype=float)
         else:
             self.kernal = np.ones((3, 3), dtype=float)
-        self.applykernalweight()
+        self.applykernalweight(self)
 
     def applykernalweight(self):
         for r, row in enumerate(self.kernal):
@@ -42,11 +43,12 @@ class MedianFilter(FilterPluginInterface):
         return result
 
     def performFilter(self, masksize, maskweight, raw_img):
+        operationStartTime = time.time()
         self.masksize = masksize
         self.weight = maskweight
         self.img_data = np.array(raw_img)
         self.filteredImage = np.empty_like(self.img_data)
-        self.setkernal()
+        self.setkernal(self)
         S = self.img_data.shape
         F = self.kernal.shape
 
@@ -61,6 +63,7 @@ class MedianFilter(FilterPluginInterface):
         for i in range(S[0]):
             for j in range(S[1]):
                 window_slice = np.array(Z[i:i + F[0], j:j + F[1]])
-                result = self.filterComputation(window_slice)
+                result = self.filterComputation(self,window_slice)
                 self.filteredImage[i, j] = result
-        return self.filteredImage
+        totalOperation = time.time() - operationStartTime
+        return self.filteredImage, totalOperation

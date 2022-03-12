@@ -1,6 +1,7 @@
 from pluginfiles.plugin import FilterPluginInterface
 import numpy as np
 import math
+import time
 from PIL import Image, ImageFile
 
 
@@ -40,6 +41,7 @@ class LinearFilter(FilterPluginInterface):
         return result
 
     def performFilter(self, masksize, maskweight, raw_img):
+        operationStartTime = time.time()
         self.masksize = masksize
         self.weight = maskweight
         self.img_data = np.array(raw_img)
@@ -62,4 +64,5 @@ class LinearFilter(FilterPluginInterface):
                 window_slice = np.array(Z[i:i + F[0], j:j + F[1]])
                 result = self.filterComputation(self,window_slice)
                 self.filteredImage[i,j] = result
-        return self.filteredImage
+        totalOperation = time.time() - operationStartTime
+        return self.filteredImage,totalOperation
