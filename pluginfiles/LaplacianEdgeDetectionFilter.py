@@ -5,28 +5,20 @@ import time
 from PIL import Image, ImageFile
 
 
-class LinearFilter(MaskFilterPluginInterface):
+class LaplacianEdgeDetectionFilter(MaskFilterPluginInterface):
     kernal = None
     filteredImage = None
     masksize = None
     weight = None
+    img_data = None
 
     def setkernal(self):
-        if self.masksize == 2:
-            self.kernal = np.ones((5, 5), dtype=float)
-        else:
-            self.kernal = np.ones((3, 3), dtype=float)
-        self.applykernalweight(self)
+        self.kernal = [[0, 1, 0], [1, -4, 1], [0, 1, 0]]
 
     def applykernalweight(self):
         for r, row in enumerate(self.kernal):
             for c, col in enumerate(row):
                 self.kernal[r][c] = self.weight * col
-
-    def updatekernalcenter(self, value):
-        centerrowindex = math.floor(self.kernal.shape[0] / 2)
-        centercolindex = math.floor(self.kernal.shape[1] / 2)
-        self.kernal[centerrowindex][centercolindex] = value
 
     def filterComputation(self, window_slice):
         w = window_slice.shape
@@ -34,7 +26,7 @@ class LinearFilter(MaskFilterPluginInterface):
         for i in range(w[0]):
             for j in range(w[1]):
                 window_pixel = window_slice[i, j]
-                kernal_value = self.kernal[i,j]
+                kernal_value = self.kernal[i][j]
                 temp = window_pixel * kernal_value
                 tempArray.append(temp)
         result = np.sum(tempArray)
@@ -49,20 +41,21 @@ class LinearFilter(MaskFilterPluginInterface):
         self.setkernal(self)
         self.applykernalweight(self)
         S = self.img_data.shape
-        F = self.kernal.shape
+        kernal_height = len(self.kernal)
+        kernal_width = len(self.kernal[0])
 
-        R = S[0] + F[0] - 1
-        C = S[1] + F[1] - 1
+        R = S[0] + kernal_height - 1
+        C = S[1] + kernal_width - 1
         Z = np.zeros((R, C))
-        t1 = np.int((F[0] - 1) / 2)
-        t2 = np.int((F[1] - 1) / 2)
+        t1 = np.int((kernal_height - 1) / 2)
+        t2 = np.int((kernal_width - 1) / 2)
         for i in range(S[0]):
             for j in range(S[1]):
                 Z[i + t1, j + t2] = self.img_data[i, j]
         for i in range(S[0]):
             for j in range(S[1]):
-                window_slice = np.array(Z[i:i + F[0], j:j + F[1]])
-                result = self.filterComputation(self,window_slice)
-                self.filteredImage[i,j] = result
+                window_slice = np.array(Z[i:i + kernal_height, j:j + kernal_width])
+                result = self.filterComputation(self, window_slice)
+                self.filteredImage[i, j] = result
         totalOperation = time.time() - operationStartTime
         return self.filteredImage,totalOperation

@@ -1,10 +1,17 @@
 import numpy as np
 
 registeredFilters = np.array(["GaussianNoiseFilter", "LinearFilter", "MedianFilter",
-                              "SaltAndPepperFilter"])
+                              "SaltAndPepperFilter", "HistogramEqualization", "LaplacianEdgeDetectionFilter",
+                              "DilationFilter"])
 
 
 class FilterPluginInterface:
+
+    def performFilter(self, raw_img):
+        pass
+
+
+class MaskFilterPluginInterface:
 
     def performFilter(self, masksize, maskweight, raw_img):
         pass

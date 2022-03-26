@@ -1,11 +1,11 @@
-from pluginfiles.plugin import FilterPluginInterface
+from pluginfiles.plugin import MaskFilterPluginInterface
 import numpy as np
 import math
 import statistics
 import time
 
 
-class MedianFilter(FilterPluginInterface):
+class MedianFilter(MaskFilterPluginInterface):
     kernal = None
     filteredImage = None
     masksize = None
