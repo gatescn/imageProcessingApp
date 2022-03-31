@@ -5,7 +5,7 @@ import time
 from PIL import Image, ImageFile
 
 
-class DilationFilter(MaskFilterPluginInterface):
+class ErosionFilter(MaskFilterPluginInterface):
     kernal = None
     filteredImage = None
     masksize = None
@@ -35,9 +35,9 @@ class DilationFilter(MaskFilterPluginInterface):
     def filterComputation(self, window_slice):
         for r, row in enumerate(self.kernal):
             for c, col in enumerate(row):
-                if self.kernal[r][c] == window_slice[r][c]:
-                    return 0
-        return 255
+                if self.kernal[r][c] != window_slice[r][c]:
+                    return 255
+        return 0
 
     def performFilter(self, masksize, maskweight, raw_img):
         operationStartTime = time.time()
