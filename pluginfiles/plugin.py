@@ -2,7 +2,7 @@ import numpy as np
 
 registeredFilters = np.array(["GaussianNoiseFilter", "LinearFilter", "MedianFilter",
                               "SaltAndPepperFilter", "HistogramEqualization", "LaplacianEdgeDetectionFilter",
-                              "DilationFilter", "ErosionFilter"])
+                              "DilationFilter", "ErosionFilter", "HistogramThresholdSegmentation"])
 
 
 class FilterPluginInterface:

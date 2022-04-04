@@ -31,3 +31,10 @@ def calculateHistogram(data, bins):
         histogram[pixel] += 1
 
     return histogram
+
+
+
+
+
+
+
