@@ -8,7 +8,7 @@ import numpy as np
 from datetime import datetime
 from PIL import Image, ImageFile, UnidentifiedImageError
 from pluginfiles.plugin import registeredFilters
-from pluginfiles.plugin import MaskFilterPluginInterface, NoiseFilterPluginInterface, FilterPluginInterface
+from pluginfiles.plugin import MaskFilterPluginInterface, NoiseFilterPluginInterface, FilterPluginInterface, MetamorphicFilterPluginInterface
 from pluginfiles import StatOperations
 
 operationDefDirectory = "/operationDefinitionRepository/"
@@ -162,6 +162,12 @@ if __name__ == '__main__':
                     filteredImageData, operationTime = plugin.performFilter(plugin, strength, raw_img)
                     operationTimeCapture.append(operationTime)
 
+                # checks if plugin is a noise filter type
+                if issubclass(plugin, MetamorphicFilterPluginInterface):
+                    iterations = int(definitionParams['iteration'])
+                    filteredImageData, operationTime = plugin.iterateFilter(plugin, raw_img, iterations)
+                    operationTimeCapture.append(operationTime)
+
                 # adds the processed image to filterImagesMap, uses filename as key.
                 filteredImages[filename] = filteredImageData
 
@@ -169,7 +175,7 @@ if __name__ == '__main__':
                 fileIndex = fileIndex + 1
 
                 # prints the current filter being used along with the file being filtered
-                print(str(fileIndex) + "of" + str(fileTotal))
+                print(str(fileIndex) + "of" + str(fileTotal -1))
 
         # calculates the avg time of the operation
         processingTimeAvg = np.mean(operationTimeCapture)

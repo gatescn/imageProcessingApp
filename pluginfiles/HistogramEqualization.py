@@ -1,4 +1,4 @@
-from pluginfiles.plugin import FilterPluginInterface
+from pluginfiles.plugin import MetamorphicFilterPluginInterface
 import pluginfiles.StatOperations as statOps
 import numpy as np
 import time
@@ -12,7 +12,7 @@ def cumsum(a):
     return np.array(b)
 
 
-class HistogramEqualization(FilterPluginInterface):
+class HistogramEqualization(MetamorphicFilterPluginInterface):
     img_data = None
 
     def performFilter(self, raw_img):

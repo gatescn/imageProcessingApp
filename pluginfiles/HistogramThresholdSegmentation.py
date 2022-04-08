@@ -1,11 +1,13 @@
-from pluginfiles.plugin import FilterPluginInterface
+from pluginfiles.plugin import MetamorphicFilterPluginInterface
 import pluginfiles.StatOperations as statOps
 import numpy as np
 import time
 import sys
+import matplotlib.pyplot as plt
+import os
 
 
-class HistogramThresholdSegmentation(FilterPluginInterface):
+class HistogramThresholdSegmentation(MetamorphicFilterPluginInterface):
     img_data = None
     histogram_data = None
     objectPixels = None
@@ -13,17 +15,44 @@ class HistogramThresholdSegmentation(FilterPluginInterface):
     total_pixel_count = None
     prob_of_obj = None
     prob_of_background = None
+    filteredImage = None
 
     def performFilter(self, raw_img):
         operation_start_time = time.time()
         self.img_data = np.array(raw_img)
+        self.filteredImage = np.empty_like(self.img_data)
         self.total_pixel_count = self.img_data.shape[0] * self.img_data.shape[1]
         bin_size = 255
         flat_data = self.img_data.copy().flatten()
         self.histogram_data = statOps.calculateHistogram(flat_data, bin_size)
         best_threshold = self.find_best_threshold(self)
+        filteredImage = self.seperateBasedOnThreshold(self, self.img_data, best_threshold)
         totalOperation = time.time() - operation_start_time
-        return self.img_data, totalOperation
+        return filteredImage, totalOperation
+
+    def seperateBasedOnThreshold(self, image_data, threshold):
+        for i in range(image_data.shape[0]):
+            for j in range(image_data.shape[1]):
+                if image_data[i, j] <= threshold:
+                    self.filteredImage[i, j] = 0
+                else:
+                    self.filteredImage[i,j] = 255
+        return self.filteredImage
+
+    def outputHistograms(self, histodata, line_val):
+        histogram_title = os.path.splitext("temp")[0] + '_Histogram_Output'
+        plt.plot(histodata)
+        plt.title(histogram_title)
+        plt.xlabel('Pixel Values')
+        plt.axvline(line_val, color='k', linestyle='dashed', linewidth=1)
+
+    def calculateHistogram(self, data, bins):
+        histogram = np.zeros(bins + 1)
+
+        for pixel in data:
+            histogram[pixel] += 1
+
+        return histogram
 
     def find_best_threshold(self):
         variance = sys.float_info.max

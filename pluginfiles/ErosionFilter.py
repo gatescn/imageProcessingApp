@@ -1,36 +1,32 @@
-from pluginfiles.plugin import MaskFilterPluginInterface
 import numpy as np
-import math
 import time
-from PIL import Image, ImageFile
+from pluginfiles.plugin import MetamorphicFilterPluginInterface
 
 
-class ErosionFilter(MaskFilterPluginInterface):
-    kernal = None
-    filteredImage = None
-    masksize = None
-    weight = None
-    img_data = None
+class ErosionFilter(MetamorphicFilterPluginInterface):
+    kernal_height = None
+    kernal_width = None
+    kernal = [[0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0]]
 
-    def setkernal(self):
-        self.kernal = [[0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0],
-                       [0, 0, 0, 0, 0]]
-
-    def binarizeImage(self, img_data, threshvalue):
+    def binarize_image(self, img_data):
+        threshold_value = int(255 / 2)
         white_p_v = 255
         black_p_v = 0
-        whiteThresholdResult = np.where((img_data <= threshvalue), img_data, white_p_v)
-        blackThresholdResult = np.where((whiteThresholdResult > threshvalue), whiteThresholdResult, black_p_v)
+        white_threshold_result = np.where((img_data <= threshold_value), img_data, white_p_v)
+        black_threshold_result = np.where((white_threshold_result > threshold_value), white_threshold_result, black_p_v)
 
-        return blackThresholdResult
+        return black_threshold_result
 
-    def applykernalweight(self):
-        for r, row in enumerate(self.kernal):
-            for c, col in enumerate(row):
-                self.kernal[r][c] = self.weight * col
+    def initialize(self, raw_img):
+        raw_img_data = np.array(raw_img)
+        binary_img_data = self.binarize_image(self, raw_img_data)
+        self.kernal_height = len(self.kernal)
+        self.kernal_width = len(self.kernal[0])
+        return binary_img_data
 
     def filterComputation(self, window_slice):
         for r, row in enumerate(self.kernal):
@@ -39,34 +35,32 @@ class ErosionFilter(MaskFilterPluginInterface):
                     return 255
         return 0
 
-    def performFilter(self, masksize, maskweight, raw_img):
-        operationStartTime = time.time()
-        threshold_value = int(255 / 2)
-        self.masksize = masksize
-        self.weight = maskweight
-        raw_img_data = np.array(raw_img)
-        self.setkernal(self)
-        self.applykernalweight(self)
-        self.img_data = self.binarizeImage(self, raw_img_data, threshold_value)
-        self.filteredImage = self.img_data.copy()
-        S = self.img_data.shape
-        kernal_height = len(self.kernal)
-        kernal_width = len(self.kernal[0])
+    def iterateFilter(self, raw_img, iterate_count):
+        operation_start = time.time()
+        current_result = self.initialize(self, raw_img)
+        for i in range(iterate_count):
+            img_data = self.performFilter(self, current_result)
+            current_result = img_data
+        total_op_time = time.time() - operation_start
+        return current_result, total_op_time
 
-        R = S[0] + kernal_height - 1
-        C = S[1] + kernal_width - 1
-        Z = np.zeros((R, C))
-        t1 = np.int((kernal_height - 1) / 2)
-        t2 = np.int((kernal_width - 1) / 2)
-        for i in range(S[0]):
-            for j in range(S[1]):
-                Z[i + t1, j + t2] = self.img_data[i, j]
-        # im = Image.fromarray(Z)
-        # im.show()
-        for i in range(S[0]):
-            for j in range(S[1]):
-                window_slice = np.array(Z[i:i + kernal_height, j:j + kernal_width])
+    def performFilter(self, img):
+        filtered_image = img.copy()
+        zero_padded_image = self.createZeroPaddedImage(self, img)
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                window_slice = np.array(zero_padded_image[i:i + self.kernal_height, j:j + self.kernal_width])
                 result = self.filterComputation(self, window_slice)
-                self.filteredImage[i, j] = result
-        totalOperation = time.time() - operationStartTime
-        return self.filteredImage, totalOperation
+                filtered_image[i, j] = result
+        return filtered_image
+
+    def createZeroPaddedImage(self, img):
+        r = img.shape[0] + self.kernal_height - 1
+        c = img.shape[1] + self.kernal_width - 1
+        z = np.zeros((r, c))
+        row_offset = np.int((self.kernal_height - 1) / 2)
+        col_offset = np.int((self.kernal_width - 1) / 2)
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                z[i + row_offset, j + col_offset] = img[i, j]
+        return z
