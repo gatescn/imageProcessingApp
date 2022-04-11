@@ -58,4 +58,4 @@ class LaplacianEdgeDetectionFilter(MaskFilterPluginInterface):
                 result = self.filterComputation(self, window_slice)
                 self.filteredImage[i, j] = result
         totalOperation = time.time() - operationStartTime
-        return self.filteredImage,totalOperation
+        return self.filteredImage, totalOperation

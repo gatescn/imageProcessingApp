@@ -8,7 +8,8 @@ import numpy as np
 from datetime import datetime
 from PIL import Image, ImageFile, UnidentifiedImageError
 from pluginfiles.plugin import registeredFilters
-from pluginfiles.plugin import MaskFilterPluginInterface, NoiseFilterPluginInterface, FilterPluginInterface, MetamorphicFilterPluginInterface
+from pluginfiles.plugin import MaskFilterPluginInterface, NoiseFilterPluginInterface,\
+    FilterPluginInterface, MetamorphicFilterPluginInterface, ClusterPluginInterface
 from pluginfiles import StatOperations
 
 operationDefDirectory = "/operationDefinitionRepository/"
@@ -166,6 +167,16 @@ if __name__ == '__main__':
                 if issubclass(plugin, MetamorphicFilterPluginInterface):
                     iterations = int(definitionParams['iteration'])
                     filteredImageData, operationTime = plugin.iterateFilter(plugin, raw_img, iterations)
+                    operationTimeCapture.append(operationTime)
+
+                if issubclass(plugin, ClusterPluginInterface):
+                    k = int(definitionParams['k'])
+                    max_iters = int(definitionParams['max_iters'])
+                    if int(definitionParams['plot_steps']) == 1:
+                        plot_steps = True
+                    else:
+                        plot_steps = False
+                    filteredImageData, operationTime = plugin.performFilter(plugin, raw_img, k, max_iters)
                     operationTimeCapture.append(operationTime)
 
                 # adds the processed image to filterImagesMap, uses filename as key.

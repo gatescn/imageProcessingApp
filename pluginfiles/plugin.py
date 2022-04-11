@@ -11,6 +11,12 @@ class FilterPluginInterface:
         pass
 
 
+class ClusterPluginInterface:
+
+    def performFilter(self, raw_img, k, max_iters):
+        pass
+
+
 class MetamorphicFilterPluginInterface:
 
     def iterateFilter(self, raw_img, iterate_count):
