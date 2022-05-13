@@ -38,4 +38,4 @@ class HistogramEqualization(Plugin):
 
         operation_total_time = time.time() - operation_start_time
 
-        return img_new, operation_total_time
+        return img_new

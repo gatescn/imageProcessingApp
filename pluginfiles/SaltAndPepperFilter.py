@@ -29,7 +29,7 @@ class SaltAndPepperFilter(Plugin):
                 pixelvalue = self.computevalue(self,col)
                 self.imgMatrix[r][c] = pixelvalue
         totalOperation = time.time() - operationStartTime
-        return self.imgMatrix, totalOperation
+        return self.imgMatrix
 
     def computevalue(self, currentpixel):
         decider = random.randint(0, len(self.strength) - 1)

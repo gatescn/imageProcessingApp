@@ -69,4 +69,4 @@ class LaplacianEdgeDetectionFilter(Plugin):
                 self.filteredImage[i, j] = result
         totalOperation = time.time() - operationStartTime
         self.negateImage(self)
-        return self.filteredImage, totalOperation
+        return self.filteredImage

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pluginfiles import HelperLibrary
 from pluginfiles.plugin import Plugin, Classifier
 from pluginfiles.FeatureGrabber import Region_Props
@@ -12,8 +14,10 @@ def save_images(image_map, output_directory):
     if len(image_map) > 0:
         for key in image_map:
             operation_output_directory = output_directory + "/" + key
-            # if os.path.isdir(operation_output_directory):
-            #     HelperLibrary.createHistoryDirectory(operation_output_directory, key)
+            if os.path.isdir(operation_output_directory):
+                now = datetime.now()
+                d = now.strftime("%m%d%Y%H_%M_%S")
+                operation_output_directory = output_directory + "/" + key + str(d)
             os.mkdir(operation_output_directory)
             processed_images = image_map[key]
             for i in range(len(processed_images)):

@@ -34,4 +34,4 @@ class GaussianNoiseFilter(Plugin):
             flatarray[i] = flatarray[i] + noise[i]
         filteredimg = np.reshape(flatarray, originalShape)
         totalOperation = time.time() - operationStartTime
-        return filteredimg, totalOperation
+        return filteredimg

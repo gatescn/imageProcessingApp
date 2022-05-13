@@ -28,7 +28,7 @@ class HistogramThresholdSegmentation(Plugin):
         best_threshold = self.find_best_threshold(self)
         filteredImage = self.seperateBasedOnThreshold(self, self.img_data, best_threshold)
         totalOperation = time.time() - operation_start_time
-        return filteredImage, totalOperation
+        return filteredImage
 
     def seperateBasedOnThreshold(self, image_data, threshold):
         for i in range(image_data.shape[0]):
