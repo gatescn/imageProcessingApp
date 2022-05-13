@@ -1,11 +1,12 @@
-from pluginfiles.plugin import MaskFilterPluginInterface
+from pluginfiles import HelperLibrary
+from pluginfiles.plugin import Plugin
 import numpy as np
 import math
 import time
 from PIL import Image, ImageFile
 
 
-class LaplacianEdgeDetectionFilter(MaskFilterPluginInterface):
+class LaplacianEdgeDetectionFilter(Plugin):
     kernal = None
     filteredImage = None
     masksize = None
@@ -20,6 +21,14 @@ class LaplacianEdgeDetectionFilter(MaskFilterPluginInterface):
             for c, col in enumerate(row):
                 self.kernal[r][c] = self.weight * col
 
+    def negateImage(self):
+        for i in range(self.filteredImage.shape[0]):
+            for j in range(self.filteredImage.shape[1]):
+                if self.filteredImage[i][j] == 255:
+                    self.filteredImage[i][j] = 0
+                else:
+                    self.filteredImage[i][j] = 255
+
     def filterComputation(self, window_slice):
         w = window_slice.shape
         tempArray = []
@@ -32,10 +41,11 @@ class LaplacianEdgeDetectionFilter(MaskFilterPluginInterface):
         result = np.sum(tempArray)
         return result
 
-    def performFilter(self, masksize, maskweight, raw_img):
+    def run(self, filename, raw_img, definition_path):
         operationStartTime = time.time()
-        self.masksize = masksize
-        self.weight = maskweight
+        params = HelperLibrary.readDefinitionFile(definition_path)
+        self.masksize = int(params["maskSize"])
+        self.weight = float(params["filterWeight"])
         self.img_data = np.array(raw_img)
         self.filteredImage = np.empty_like(self.img_data)
         self.setkernal(self)
@@ -58,4 +68,5 @@ class LaplacianEdgeDetectionFilter(MaskFilterPluginInterface):
                 result = self.filterComputation(self, window_slice)
                 self.filteredImage[i, j] = result
         totalOperation = time.time() - operationStartTime
+        self.negateImage(self)
         return self.filteredImage, totalOperation

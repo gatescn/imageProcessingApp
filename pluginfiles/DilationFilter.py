@@ -1,9 +1,10 @@
-from pluginfiles.plugin import MetamorphicFilterPluginInterface
+from pluginfiles import HelperLibrary
+from pluginfiles.plugin import Plugin
 import numpy as np
 import time
 
 
-class DilationFilter(MetamorphicFilterPluginInterface):
+class DilationFilter(Plugin):
     kernal_height = None
     kernal_width = None
 
@@ -36,8 +37,10 @@ class DilationFilter(MetamorphicFilterPluginInterface):
         self.kernal_width = len(self.kernal[0])
         return binary_img_data
 
-    def iterateFilter(self, raw_img, iterate_count):
+    def run(self, raw_img, filename, definition_path):
         operation_start = time.time()
+        params = HelperLibrary.readDefinitionFile(definition_path)
+        iterate_count = int(params["iteration"])
         current_result = self.initialize(self, raw_img)
         for i in range(iterate_count):
             img_data = self.performFilter(self, current_result)

@@ -1,9 +1,11 @@
 import numpy as np
 import time
-from pluginfiles.plugin import MetamorphicFilterPluginInterface
+
+from pluginfiles import HelperLibrary
+from pluginfiles.plugin import Plugin
 
 
-class ErosionFilter(MetamorphicFilterPluginInterface):
+class ErosionFilter(Plugin):
     kernal_height = None
     kernal_width = None
     kernal = [[0, 0, 0, 0, 0],
@@ -35,8 +37,10 @@ class ErosionFilter(MetamorphicFilterPluginInterface):
                     return 255
         return 0
 
-    def iterateFilter(self, raw_img, iterate_count):
+    def run(self, raw_img, filename, definition_path):
         operation_start = time.time()
+        params = HelperLibrary.readDefinitionFile(definition_path)
+        iterate_count = int(params["iteration"])
         current_result = self.initialize(self, raw_img)
         for i in range(iterate_count):
             img_data = self.performFilter(self, current_result)

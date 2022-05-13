@@ -1,147 +1,86 @@
-from pluginfiles.plugin import ClusterPluginInterface
+from pluginfiles import HelperLibrary
+from pluginfiles.plugin import Plugin
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import style
+
+style.use('ggplot')
 import time
 
 
-class point:
-    value = None
-    x = None
-    y = None
+class KMeansClustering(Plugin):
+    max_iter = 0
+    tol = 0.001
+    k = 0
+    data = None
+    centroids = None
+    classifications = None
 
-    def __init__(self, v, x_v, y_v):
-        self.value = v
-        self.x = x_v
-        self.y = y_v
+    def run(self, raw_img, filename, definition_path):
+        params = HelperLibrary.readDefinitionFile(definition_path)
+        self.k = int(params["k"])
+        self.max_iter = int(params["max_iters"])
+        self.data = np.array(raw_img)
 
+        X = np.array([[1, 2],
+                      [1.5, 1.8],
+                      [5, 8],
+                      [8, 8],
+                      [1, 0.6],
+                      [9, 11],
+                      [1, 3],
+                      [8, 9],
+                      [0, 3],
+                      [5, 4],
+                      [6, 4], ])
+        colors = 10 * ["g", "r", "c", "b", "k"]
 
-def euclidean_distance(image_point: point, centroid_point: point):
-    image_point = np.array((image_point.x, image_point.y))
-    x2 = np.array((centroid_point.x, centroid_point.y))
-    dist = np.linalg.norm(image_point - x2)
-    return dist
+        self.fit(self, self.data)
 
+        for centroid in self.centroids:
+            plt.scatter(self.centroids[centroid][0], self.centroids[centroid][1],
+                        marker="o", color="k", s=150, linewidths=5)
 
-def closest_centroid(image_point: point, centroids):
-    distances = []
-    for centroid_point in centroids:
-        dist = euclidean_distance(image_point, centroid_point)
-        distances.append(dist)
-    closest_centroid_id = np.argmin(distances)
-    return closest_centroid_id
+        for classification in self.classifications:
+            color = colors[classification]
+            for featureset in self.classifications[classification]:
+                plt.scatter(featureset[0], featureset[1], marker="x", color=color, s=150, linewidths=5)
 
+        plt.show()
 
-def get_mean_centroids(clusters):
-    centroids = []
-    for centroid_id, cluster in enumerate(clusters):
-        v_avg_temp1 = []
-        x_avg_temp1 = []
-        y_avg_temp1 = []
-        for p in cluster:
-            v_avg_temp1.append(p.value)
-            x_avg_temp1.append(p.x)
-            y_avg_temp1.append(p.y)
-        v_avg_temp2 = np.array(v_avg_temp1)
-        x_avg_temp2 = np.array(x_avg_temp1)
-        y_avg_temp2 = np.array(y_avg_temp1)
-        cluster_value_mean = np.mean(v_avg_temp2)
-        cluster_x_mean = np.mean(x_avg_temp2)
-        cluster_y_mean = np.mean(y_avg_temp2)
-        new_cluster_point = point(cluster_value_mean, cluster_x_mean, cluster_y_mean)
-        centroids.append(new_cluster_point)
-    return centroids
+    def fit(self, data):
+        self.centroids = {}
 
-
-class KMeansClustering(ClusterPluginInterface):
-    k = None
-    max_iterations = None
-    centroids = []
-    acceptance_value = 2
-    image_points_array = None
-    segmented_image = None
-    col_count = None
-    row_count = None
-    clusters = None
-
-    def performFilter(self, raw_img, k, max_iterations):
-        operation_start_time = time.time()
-        self.k = k
-        self.centroids = []
-        img_data = np.array(raw_img)
-        self.segmented_image = img_data.copy()
-        self.row_count, self.col_count = self.segmented_image.shape
-        self.image_points_array = self.setup_point_array(self)
-        self.max_iterations = max_iterations
-        self.clusters = [[] for _ in range(self.k)]
-        self.predict(self)
-        operation_end_time = time.time() - operation_start_time
-        return self.segmented_image, operation_end_time
-
-    def setup_point_array(self):
-        image_point_array = []
-        for r in range(self.row_count):
-            for c in range(self.col_count):
-                v = self.segmented_image[r][c]
-                p = point(v, r, c)
-                image_point_array.append(p)
-        return image_point_array
-
-    def find_unique_random_values(self):
-        # initialize our centroids
-        random_sample_values = None
-        unique = False
-        while not unique:
-            random_sample_values = np.random.choice(self.image_points_array, self.k, replace=False)
-            if len(random_sample_values) == len(set(random_sample_values)):
-                unique = True
-        return random_sample_values
-
-    def predict(self):
-        random_sample_values = self.find_unique_random_values(self)
-        for cp in random_sample_values:
-            self.centroids.append(cp)
-        print("assigned random centroids")
-        for i in range(self.max_iterations):
-            # update clusters
-            self.clusters = self.create_clusters(self, self.centroids)
-            print("points assigned to clusters")
-            # update centroid
-            centroids_old = self.centroids
-            print("updating centroids to mean")
-            self.centroids = get_mean_centroids(self.clusters)
-            print("updated centroids to mean")
-            # check if converged
-            print("checking if converged")
-            if self.is_converged(self, centroids_old, self.centroids):
-                print("successful convergence at attempt: " + str(i))
-                break
-            print("attempt: " + str(i + 1) + " of " + str(self.max_iterations))
-        # apply diff levels of greyscale to each clustering group
-        return self.apply_cluster_group_effects(self, self.clusters)
-
-    def create_clusters(self, centroids):
-        clusters = [[] for _ in range(self.k)]
-        for p in self.image_points_array:
-            closest_centroid_id = closest_centroid(p, centroids)
-            if closest_centroid_id > 1:
-                print("not 0 or 1")
-            clusters[closest_centroid_id].append(p)
-        return clusters
-
-    def is_converged(self, centroids_old, centroids):
-        distances = []
         for i in range(self.k):
-            old_centroid = centroids_old[i]
-            mean_centroid = centroids[i]
-            dist = euclidean_distance(old_centroid, mean_centroid)
-            distances.append(dist)
-        # no more chnge so its converged
-        return sum(distances) <= self.acceptance_value
+            self.centroids[i] = data[i]
 
-    def apply_cluster_group_effects(self, clusters):
-        print("assigning values")
-        n = 255
-        incr = n / self.k
-        for cluster in clusters:
-            n = n - incr
-            for p in cluster:
-                self.segmented_image[p.x][p.y] = n
+        for i in range(self.max_iter):
+            self.classifications = {}
+
+            for j in range(self.k):
+                self.classifications[j] = []
+
+            for featureset in data:
+                distances = [np.linalg.norm(featureset - self.centroids[centroid]) for centroid in self.centroids]
+                classification = distances.index(min(distances))
+                self.classifications[classification].append(featureset)
+
+            prev_centroids = dict(self.centroids)
+
+            for classification in self.classifications:
+                self.centroids[classification] = np.average(self.classifications[classification], axis=0)
+
+            optimized = True
+
+            for c in self.centroids:
+                original_centroid = prev_centroids[c]
+                current_centroid = self.centroids[c]
+                if np.sum((current_centroid - original_centroid) / original_centroid * 100.0) > self.tol:
+                    optimized = False
+            if optimized:
+                break
+
+    def predict(self, data):
+        distances = [np.linalg.norm(data - self.centroids[centroid]) for centroid in self.centroids]
+        classification = distances.index(min(distances))
+        return classification

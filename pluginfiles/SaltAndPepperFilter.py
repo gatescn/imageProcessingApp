@@ -1,10 +1,12 @@
 import random
 import numpy as np
 import time
-from pluginfiles.plugin import NoiseFilterPluginInterface
+
+from pluginfiles import HelperLibrary
+from pluginfiles.plugin import Plugin
 
 
-class SaltAndPepperFilter(NoiseFilterPluginInterface):
+class SaltAndPepperFilter(Plugin):
     strength = None
     imgMatrix = None
 
@@ -16,9 +18,10 @@ class SaltAndPepperFilter(NoiseFilterPluginInterface):
             self.strength = (0, 1, 2,2,2,2,2,2)
         return
 
-    def performFilter(self, strength, raw_img):
+    def run(self, raw_img, filename, definition_path):
         operationStartTime = time.time()
-        self.strength = strength
+        params = HelperLibrary.readDefinitionFile(definition_path)
+        self.strength = int(params["strength"])
         self.imgMatrix = np.array(raw_img)
         self.setstrength(self)
         for r, rows in enumerate(self.imgMatrix):

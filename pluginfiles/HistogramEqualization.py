@@ -1,5 +1,5 @@
-from pluginfiles.plugin import MetamorphicFilterPluginInterface
-import pluginfiles.StatOperations as statOps
+from pluginfiles.plugin import Plugin
+import HelperLibrary
 import numpy as np
 import time
 
@@ -12,15 +12,15 @@ def cumsum(a):
     return np.array(b)
 
 
-class HistogramEqualization(MetamorphicFilterPluginInterface):
+class HistogramEqualization(Plugin):
     img_data = None
 
-    def performFilter(self, raw_img):
+    def run(self, raw_img, filename, definition_path):
         operation_start_time = time.time()
         self.img_data = np.array(raw_img)
         bin_size = 255
         flat_data = self.img_data.copy().flatten()
-        histogram_data = statOps.calculateHistogram(flat_data, bin_size)
+        histogram_data = HelperLibrary.calculateHistogram(flat_data, bin_size)
         cs = cumsum(histogram_data)
 
         # get numerator / denominator of function

@@ -1,11 +1,12 @@
-from pluginfiles.plugin import MaskFilterPluginInterface
+from pluginfiles import HelperLibrary
+from pluginfiles.plugin import Plugin
 import numpy as np
 import math
 import statistics
 import time
 
 
-class MedianFilter(MaskFilterPluginInterface):
+class MedianFilter(Plugin):
     kernal = None
     filteredImage = None
     masksize = None
@@ -42,10 +43,11 @@ class MedianFilter(MaskFilterPluginInterface):
         result = statistics.median(tempArray)
         return result
 
-    def performFilter(self, masksize, maskweight, raw_img):
+    def run(self, raw_img, filename, definition_path):
         operationStartTime = time.time()
-        self.masksize = masksize
-        self.weight = maskweight
+        params = HelperLibrary.readDefinitionFile(definition_path)
+        self.masksize = int(params["maskSize"])
+        self.weight = float(params["filterWeight"])
         self.img_data = np.array(raw_img)
         self.filteredImage = np.empty_like(self.img_data)
         self.setkernal(self)

@@ -1,5 +1,5 @@
-from pluginfiles.plugin import MetamorphicFilterPluginInterface
-import pluginfiles.StatOperations as statOps
+from pluginfiles.plugin import Plugin
+from pluginfiles import HelperLibrary
 import numpy as np
 import time
 import sys
@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 
 
-class HistogramThresholdSegmentation(MetamorphicFilterPluginInterface):
+class HistogramThresholdSegmentation(Plugin):
     img_data = None
     histogram_data = None
     objectPixels = None
@@ -17,14 +17,14 @@ class HistogramThresholdSegmentation(MetamorphicFilterPluginInterface):
     prob_of_background = None
     filteredImage = None
 
-    def performFilter(self, raw_img):
+    def run(self, raw_img, filename, definition_path):
         operation_start_time = time.time()
         self.img_data = np.array(raw_img)
         self.filteredImage = np.empty_like(self.img_data)
         self.total_pixel_count = self.img_data.shape[0] * self.img_data.shape[1]
         bin_size = 255
         flat_data = self.img_data.copy().flatten()
-        self.histogram_data = statOps.calculateHistogram(flat_data, bin_size)
+        self.histogram_data = HelperLibrary.calculateHistogram(flat_data, bin_size)
         best_threshold = self.find_best_threshold(self)
         filteredImage = self.seperateBasedOnThreshold(self, self.img_data, best_threshold)
         totalOperation = time.time() - operation_start_time
@@ -34,9 +34,9 @@ class HistogramThresholdSegmentation(MetamorphicFilterPluginInterface):
         for i in range(image_data.shape[0]):
             for j in range(image_data.shape[1]):
                 if image_data[i, j] <= threshold:
-                    self.filteredImage[i, j] = 0
+                    self.filteredImage[i, j] = 255
                 else:
-                    self.filteredImage[i,j] = 255
+                    self.filteredImage[i,j] = 0
         return self.filteredImage
 
     def outputHistograms(self, histodata, line_val):

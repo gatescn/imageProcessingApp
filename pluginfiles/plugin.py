@@ -2,34 +2,27 @@ import numpy as np
 
 registeredFilters = np.array(["GaussianNoiseFilter", "LinearFilter", "MedianFilter",
                               "SaltAndPepperFilter", "HistogramEqualization", "LaplacianEdgeDetectionFilter",
-                              "DilationFilter", "ErosionFilter", "HistogramThresholdSegmentation", "KMeansClustering"])
+                              "DilationFilter", "ErosionFilter", "HistogramThresholdSegmentation", "KMeansClustering",
+                              "FeatureGrabber","KNN"])
 
 
-class FilterPluginInterface:
+class Plugin:
 
-    def performFilter(self, raw_img):
+    def run(self, filename, raw_img, definition_path):
         pass
 
+    def is_image_save_required(self):
+        return True
 
-class ClusterPluginInterface:
+    def is_file_save_required(self):
+        return False
 
-    def performFilter(self, raw_img, k, max_iters):
+
+class Classifier:
+    def run(self, definition_path):
         pass
+    def is_image_save_required(self):
+        return False
 
-
-class MetamorphicFilterPluginInterface:
-
-    def iterateFilter(self, raw_img, iterate_count):
-        pass
-
-
-class MaskFilterPluginInterface:
-
-    def performFilter(self, masksize, maskweight, raw_img):
-        pass
-
-
-class NoiseFilterPluginInterface:
-
-    def performFilter(self, strength_, raw_img):
-        pass
+    def is_file_save_required(self):
+        return False

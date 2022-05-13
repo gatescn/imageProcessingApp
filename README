@@ -1,41 +1,37 @@
 To run program
 
-1st: configure your processed image outputs/input folder as well filters you would like to use for this batch. The program
-will apply the filters in sequential order.
-Filters to choose from:
-
+1st: configure your operations to apply field, you can copy &paste the names from this list
 GaussianNoiseFilter
 LinearFilter
 MedianFilter
 SaltAndPepperFilter
+DilationFilter
+ErosionFilter
+GaussianNoiseFilter
+HistogramEqualization
+HistogramThresholdSegmentation
+KMeansClustering
+LaplacianEdgeDetectorFilter
+LinearFilter
+MedianFilter
+SaltAndPepperFilter
+--Feature Selector--
+FeatureGrabber
+--classifier---
+KNN
 
-2nd: define your filter definitions using the operationDefinition files in the operationDefinitionRepository folder.
-These are used to change the default values used by the filters.
-Currently implemented filters:
-Gaussian Noise
-inputs:
-strength: int = 1 or 2. 2 is the max
+For Feature Grabber,
+1. you will need to configure the external config
+    - imageDirectory field with the location of the segmented images.
+2. you will also need to configure the outputDirectory field in the external config to denote where you want the csv_report
+directory to be generated.
 
-Salt and Pepper Noise
-inputs:
-strength: int = 1 or 2, 2 is the max
+For KNN,
+1. You will need to specify the location of the csv data. You may use the data in the cell_data_05_12 folder or generate your own using the
+feature grabber.
 
-Linear Filter
-inputs:
-Mask Size = int = 1 or 2, 2 is the max
-Filter Weight = decimal
+2. you can change the N_Folds and Neighbor amount in the config.
 
-Median Filter
-inputs:
-Mask Size = = 1 or 2, 2 is the max
-Filter Weight = decimal
 
-Directories are produced for each filter along with the Histogram folder which will contain the histogram outputs for each
-image processed.
-History folders are produced after every run so you don't lose previously filtered images.
 
-Missing implementations:
-Histogram Equalization
-Color Conversion
-Histogram Quantization
 
